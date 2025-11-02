@@ -21,15 +21,22 @@ jobs:
       - name: Upload via curl to Artifactory
         env:
           JFROG_URL:   ${{ secrets.JFROG_URL }}
-          JFROG_USER:  ${{ secrets.JFROG_USER }}
-          JFROG_TOKEN: ${{ secrets.JFROG_TOKEN }}
           JFROG_REPO:  ${{ secrets.JFROG_REPO }}
+          JFROG_TOKEN: ${{ secrets.JFROG_TOKEN }}
         run: |
           set -e
           ART_PATH="demo/${{ github.repository }}/$GITHUB_RUN_NUMBER/demo.txt"
-          echo "Uploading to ${JFROG_URL}/artifactory/${JFROG_REPO}/${ART_PATH}"
-          curl -sSf -u"${JFROG_USER}:${JFROG_TOKEN}" \
+
+          echo "TARGET ...: ${JFROG_URL}/artifactory/${JFROG_REPO}/${ART_PATH}"
+
+          # Sanity ping
+          curl -sSf -H "Authorization: Bearer ${JFROG_TOKEN}" \
+               "${JFROG_URL}/artifactory/api/system/ping"
+
+          # Upload (PUT)
+          curl -sSf -H "Authorization: Bearer ${JFROG_TOKEN}" \
                -T output/demo.txt \
                "${JFROG_URL}/artifactory/${JFROG_REPO}/${ART_PATH}"
+
           echo "✅ Upload complete!"
 

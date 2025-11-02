@@ -1,4 +1,4 @@
-me: 01 - Curl Upload to JFrog
+name: Curl Upload to JFrog
 
 on:
   workflow_dispatch:

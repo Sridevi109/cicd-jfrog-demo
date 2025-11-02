@@ -1,0 +1,35 @@
+me: 01 - Curl Upload to JFrog
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build demo artifact
+        run: |
+          mkdir -p output
+          echo "Demo artifact $(date -u +%FT%TZ)" > output/demo.txt
+
+      - name: Upload via curl to Artifactory
+        env:
+          JFROG_URL:   ${{ secrets.JFROG_URL }}
+          JFROG_USER:  ${{ secrets.JFROG_USER }}
+          JFROG_TOKEN: ${{ secrets.JFROG_TOKEN }}
+          JFROG_REPO:  ${{ secrets.JFROG_REPO }}
+        run: |
+          set -e
+          ART_PATH="demo/${{ github.repository }}/$GITHUB_RUN_NUMBER/demo.txt"
+          echo "Uploading to ${JFROG_URL}/artifactory/${JFROG_REPO}/${ART_PATH}"
+          curl -sSf -u"${JFROG_USER}:${JFROG_TOKEN}" \
+               -T output/demo.txt \
+               "${JFROG_URL}/artifactory/${JFROG_REPO}/${ART_PATH}"
+          echo "✅ Upload complete!"
+
